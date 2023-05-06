@@ -75,9 +75,9 @@ body::-webkit-scrollbar {
 
 @media (width > 500px) {
 
-    body {
-        align-items: center;    
-    }
+  body {
+    align-items: center;
+  }
 
   .card,
   .location {
@@ -87,15 +87,15 @@ body::-webkit-scrollbar {
 
 /* small */
 
-@media (width <= 500px) {
+@media (width <=500px) {
 
-    body {
-        align-items: flex-start;
-        /* padding-top: 2em; */
-    }
+  body {
+    align-items: flex-start;
+    /* padding-top: 2em; */
+  }
 
   .card {
-      width: 400px;
+    width: 400px;
   }
 
   .location {
@@ -313,11 +313,11 @@ h2.temp {
   0% {
     opacity: 0.4;
   }
-  
+
   50% {
     opacity: 0.8;
   }
-  
+
   100% {
     opacity: 0.4;
   }
