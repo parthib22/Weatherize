@@ -31,14 +31,14 @@ jobs:
         run: |
           echo "Checking secrets availability..."
           MISSING_SECRETS=0
-          
+
           if [ -z "${{ secrets.OPENWEATHER_API_KEY }}" ]; then
             echo "❌ OPENWEATHER_API_KEY secret is not set"
             MISSING_SECRETS=1
           else
             echo "✅ OPENWEATHER_API_KEY is available"
           fi
-          
+
           if [ -z "${{ secrets.OPENCAGE_API_KEY }}" ]; then
             echo "❌ OPENCAGE_API_KEY secret is not set"
             MISSING_SECRETS=1
@@ -52,7 +52,7 @@ jobs:
           else
             echo "✅ UNSPLASH_API_KEY is available"
           fi
-          
+
           if [ $MISSING_SECRETS -eq 1 ]; then
             echo ""
             echo "📋 To fix this, go to your repository settings:"
@@ -88,12 +88,12 @@ jobs:
           if (typeof window !== 'undefined') {
             window.CONFIG = CONFIG;
           }
-          
+
           console.log('Configuration loaded successfully');
           EOF
-          
+
           echo "✅ config.js created successfully"
-          
+
       - name: Verify files before upload
         run: |
           echo "Files that will be uploaded:"
