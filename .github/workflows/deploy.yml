@@ -3,8 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [master, main]
-  pull_request:
-    branches: [master, main]
+  workflow_dispatch: # Allow manual triggering
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -28,9 +27,48 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      - name: Check if secrets are available
+        run: |
+          echo "Checking secrets availability..."
+          MISSING_SECRETS=0
+          
+          if [ -z "${{ secrets.OPENWEATHER_API_KEY }}" ]; then
+            echo "❌ OPENWEATHER_API_KEY secret is not set"
+            MISSING_SECRETS=1
+          else
+            echo "✅ OPENWEATHER_API_KEY is available"
+          fi
+          
+          if [ -z "${{ secrets.OPENCAGE_API_KEY }}" ]; then
+            echo "❌ OPENCAGE_API_KEY secret is not set"
+            MISSING_SECRETS=1
+          else
+            echo "✅ OPENCAGE_API_KEY is available"
+          fi
+
+          if [ -z "${{ secrets.UNSPLASH_API_KEY }}" ]; then
+            echo "❌ UNSPLASH_API_KEY secret is not set"
+            MISSING_SECRETS=1
+          else
+            echo "✅ UNSPLASH_API_KEY is available"
+          fi
+          
+          if [ $MISSING_SECRETS -eq 1 ]; then
+            echo ""
+            echo "📋 To fix this, go to your repository settings:"
+            echo "   Settings > Secrets and variables > Actions > New repository secret"
+            echo ""
+            echo "   Add these secrets:"
+            echo "   - OPENWEATHER_API_KEY (from https://openweathermap.org/api)"
+            echo "   - OPENCAGE_API_KEY (from https://opencagedata.com/api)"
+            echo "   - UNSPLASH_API_KEY (from https://unsplash.com/developers)"
+            exit 1
+          fi
+
       - name: Create config.js from secrets
         run: |
-          cat > config.js << EOF
+          echo "Creating config.js file..."
+          cat > config.js << 'EOF'
           /**
            * Configuration file containing API keys
            * Generated automatically during deployment
@@ -40,15 +78,35 @@ jobs:
             OPENWEATHER_API_KEY: "${{ secrets.OPENWEATHER_API_KEY }}",
             
             // OpenCage Geocoding API key for location services
-            OPENCAGE_API_KEY: "${{ secrets.OPENCAGE_API_KEY }}"
-
+            OPENCAGE_API_KEY: "${{ secrets.OPENCAGE_API_KEY }}",
+            
             // Unsplash API key for background images
-            UNSPLASH_API_KEY: "${{ secrets.UNSPLASH_API_KEY }}"
+            UNSPLASH_API_KEY: "${{ secrets.UNSPLASH_API_KEY }}",
           };
 
           // Make config available globally
-          window.CONFIG = CONFIG;
+          if (typeof window !== 'undefined') {
+            window.CONFIG = CONFIG;
+          }
+          
+          console.log('Configuration loaded successfully');
           EOF
+          
+          echo "✅ config.js created successfully"
+          
+      - name: Verify files before upload
+        run: |
+          echo "Files that will be uploaded:"
+          ls -la
+          echo ""
+          echo "Checking if config.js exists and is readable:"
+          if [ -f "config.js" ]; then
+            echo "✅ config.js exists"
+            echo "File size: $(wc -c < config.js) bytes"
+          else
+            echo "❌ config.js is missing"
+            exit 1
+          fi
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
