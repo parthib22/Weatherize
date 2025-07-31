@@ -5,21 +5,32 @@ let hasUserInteracted = 0;
 // Global variable to store current city name for background image
 // let currentCityName = "";
 
-// Check if CONFIG is available, if not show helpful error
-if (typeof CONFIG === "undefined") {
-  console.error(
-    "CONFIG is not defined. Please ensure config.js is loaded before script.js"
-  );
-  alert("Configuration error: API keys not found. Please check the setup.");
-}
+// Wait for DOM and config to be ready
+document.addEventListener("DOMContentLoaded", function () {
+  // Check if CONFIG is available, if not show helpful error
+  if (typeof CONFIG === "undefined" || typeof window.CONFIG === "undefined") {
+    console.error(
+      "CONFIG is not defined. Please ensure config.js is loaded before script.js"
+    );
+    alert("Configuration error: API keys not found. Please check the setup.");
+    return; // Stop execution if CONFIG is not available
+  }
+
+  console.log("CONFIG loaded successfully:", !!CONFIG);
+
+  // Initialize the app once CONFIG is confirmed to be available
+  geocoding.getCurrentLocation();
+});
 
 /**
  * Weather API handler object
  * Manages fetching weather data and updating the UI
  */
 const weather = {
-  // OpenWeatherMap API key - loaded from config
-  apiKey: CONFIG?.OPENWEATHER_API_KEY || "",
+  // OpenWeatherMap API key - loaded from config (with fallback)
+  get apiKey() {
+    return (typeof CONFIG !== "undefined" && CONFIG.OPENWEATHER_API_KEY) || "";
+  },
 
   /**
    * Fetch weather data using coordinates (latitude and longitude)
@@ -144,9 +155,19 @@ const weather = {
   updateBackgroundImage: function (imageQuery) {
     console.log(imageQuery);
 
-    const imageUrl = `https://api.unsplash.com/photos/random?per_page=1&query=${imageQuery}&client_id=${
-      CONFIG.UNSPLASH_API_KEY
-    }&orientation=${window.innerWidth > 900 ? "landscape" : "portrait"}`;
+    // Get Unsplash API key safely
+    const unsplashKey =
+      (typeof CONFIG !== "undefined" && CONFIG.UNSPLASH_API_KEY) || "";
+    if (!unsplashKey) {
+      console.warn(
+        "Unsplash API key not available, skipping background image update"
+      );
+      return;
+    }
+
+    const imageUrl = `https://api.unsplash.com/photos/random?per_page=1&query=${imageQuery}&client_id=${unsplashKey}&orientation=${
+      window.innerWidth > 900 ? "landscape" : "portrait"
+    }`;
     // If the screen is wider than 900px, use landscape orientation
     // Otherwise, use portrait orientation
 
@@ -177,8 +198,10 @@ const weather = {
  * Manages location services and reverse geocoding
  */
 const geocoding = {
-  // OpenCage Geocoding API key - loaded from config
-  apiKey: CONFIG?.OPENCAGE_API_KEY || "",
+  // OpenCage Geocoding API key - loaded from config (with fallback)
+  get apiKey() {
+    return (typeof CONFIG !== "undefined" && CONFIG.OPENCAGE_API_KEY) || "";
+  },
 
   /**
    * Convert coordinates to location name and fetch weather
@@ -319,10 +342,4 @@ document
     }
   });
 
-// ===== INITIALIZATION =====
-
-/**
- * Initialize the app by getting user's current location
- * This runs when the page loads
- */
-geocoding.getCurrentLocation();
+// Note: geocoding.getCurrentLocation() is now called from DOMContentLoaded event listener
