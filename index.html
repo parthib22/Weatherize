@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 
 <head>
   <meta charset="UTF-8" />
@@ -24,10 +24,19 @@
   <link rel="preconnect" href="https://api.unsplash.com" />
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
   <link rel="preconnect" href="https://fonts.gstatic.com" />
-  <!-- <link
-      href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap"
-      rel="stylesheet"
-    /> -->
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          spacing: {
+            '25': '6.25rem',
+          }
+        }
+      }
+    }
+  </script>
   <link rel="stylesheet" href="./style.css" />
   <script src="./config.js"></script>
   <script src="./script.js" defer></script>
@@ -35,39 +44,77 @@
   <link rel="icon" type="image/x-icon" href="https://img.icons8.com/sf-regular-filled/48/FAB005/sun.png" />
 </head>
 
-<body>
-  <div class="card">
-    <div class="search">
-      <input type="text" class="search-bar" placeholder="Search a city" spellcheck="false" />
-      <button name="search button" aria-label="search button" aria-labelledby="search button">
-        <img src="public/search.svg" alt="">
-      </button>
-    </div>
-    <div class="weather loading">
-      <h2 class="city"><span> </span></h2>
-      <div class="temp-flex">
-        <h2 class="temp"></h2>
-        <div class="flex">
-          <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="description" class="icon" />
-          <div class="description"></div>
+<body class="flex justify-center items-center h-screen w-screen m-0 p-0 bg-slate-950 overflow-x-hidden"
+  style="background-position: center; background-size: cover; background-repeat: no-repeat; background-attachment: fixed;">
+  <main
+    class="flex flex-col gap-6 bg-[rgba(0,0,0,0.05)] text-white p-8 overflow-x-hidden z-10 sm:rounded-3xl sm:backdrop-blur-3xl max-sm:w-screen max-sm:h-full max-sm:min-h-screen max-sm:bg-black max-sm:bg-opacity-40">
+
+    <div class="weather loading flex flex-col">
+      <div class="flex flex-row flex-wrap items-center justify-between gap-2">
+        <h2 class="city text-3xl font-semibold"></h2>
+        <div class="time text-right my-4">
+          <div class="line1 text-sm font-medium"></div>
+          <div class="line2 text-xs opacity-70"></div>
         </div>
       </div>
-      <div class="feel-container">
-        <div class="feel"><span> </span></div>
+
+      <div class="temp-flex flex items-center justify-center flex-col">
+        <div class="flex flex-col items-center justify-center -m-8">
+          <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="description"
+            class="icon aspect-square" />
+        </div>
+        <h2 class="temp text-7xl font-black flex "></h2>
+        <div class="mt-4">
+
+          <div class="feel text-base"></div>
+          <div class="description opacity-60 capitalize text-sm text-left"></div>
+        </div>
       </div>
-      <div class="min-max-hum-wind">
-        <div class="min-max">
-          <div class="max"><span> </span></div>
-          <div class="min"><span> </span></div>
+      <div class="advanced-data flex items-center justify-center my-8">
+        <div class="min-max pr-4 grid gap-2">
+          <div class="max">
+            <img src="/public/arrow.svg" class="invert w-4 inline" alt="maximum temperature">
+            <span></span>
+          </div>
+          <div class="min">
+            <img src="/public/arrow.svg" class="invert rotate-180 w-4 inline" alt="minimum temperature">
+            <span></span>
+          </div>
         </div>
 
-        <div class="hum-wind">
-          <div class="humidity"><span> </span></div>
-          <div class="wind"><span> </span></div>
+        <div class="hum-wind border-x border-gray-400 px-4 grid gap-2">
+          <div class="humidity">
+            <img src="/public/humid.svg" class="invert w-4 inline" alt="humidity">
+            <span></span>
+          </div>
+          <div class="wind">
+            <img src="/public/wind.svg" class="invert w-4 inline" alt="wind speed">
+            <span></span>
+          </div>
+        </div>
+        <div class="pre-vis pl-4 grid gap-2">
+          <div class="pressure">
+            <img src="/public/pressure.svg" class="invert w-4 inline" alt="pressure">
+            <span></span>
+          </div>
+          <div class="visibility">
+            <img src="/public/visible.svg" class="invert w-4 inline" alt="visibility">
+            <span></span>
+          </div>
         </div>
       </div>
+
+      <nav class="flex items-center justify-between border-t border-white border-opacity-50 rounded-none">
+        <input type="text"
+          class="search-bar outline-none px-2 placeholder-white placeholder-opacity-50 bg-transparent max-sm:backdrop-blur-xl"
+          placeholder="Search a city" spellcheck="false" />
+        <button name="search button" aria-label="search button" aria-labelledby="search button"
+          class="search-button rounded-full aspect-square w-16 outline-none cursor-pointer transition-all duration-200 ease-in-out flex justify-center items-center hover:bg-gray-500 hover:bg-opacity-40 sm:bg-transparent max-sm:backdrop-blur-sm">
+          <img src="public/search.svg" alt="">
+        </button>
+      </nav>
     </div>
-  </div>
+  </main>
 </body>
 
 </html>

@@ -18,9 +18,43 @@ document.addEventListener("DOMContentLoaded", function () {
 
   console.log("CONFIG loaded successfully:", !!CONFIG);
 
+  // Initialize time display and start the clock
+  updateTime();
+  setInterval(updateTime, 1000); // Update every second
+
   // Initialize the app once CONFIG is confirmed to be available
   geocoding.getCurrentLocation();
 });
+
+/**
+ * Update the time display
+ */
+function updateTime() {
+  const now = new Date();
+
+  // Format time as HH:MM:SS
+  const timeString = now.toLocaleTimeString("en-US", {
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+
+  // Format date as "Day, Mon DD, YYYY"
+  const dateString = now.toLocaleDateString("en-US", {
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+
+  // Update the DOM elements
+  const line1 = document.querySelector(".line1");
+  const line2 = document.querySelector(".line2");
+
+  if (line1) line1.textContent = timeString;
+  if (line2) line2.textContent = dateString;
+}
 
 /**
  * Weather API handler object
@@ -77,12 +111,16 @@ const weather = {
    * @param {Object} data - Weather data from API response
    */
   displayWeather: function (data) {
+    document.querySelector(".weather").classList.add("loading");
+
     // Extract data from API response
     const cityName = data.name;
     const { icon, description } = data.weather[0];
     const { humidity } = data.main;
     const { speed: windSpeed } = data.wind;
     const { country } = data.sys;
+    const visibility = data.visibility / 1000; // Convert visibility to kilometers
+    const pressure = data.main.pressure;
 
     weather.updateBackgroundImage(`${cityName} ${description}`);
 
@@ -101,27 +139,23 @@ const weather = {
     // Update UI elements with weather data
     document.querySelector(
       ".city"
-    ).innerHTML = `<span>Weather in</span> ${cityName}, ${country}`;
+    ).innerHTML = `${cityName}, <span class="font-black">${country}</span>`;
     document.querySelector(
       ".icon"
-    ).src = `https://openweathermap.org/img/wn/${icon}@2x.png`;
+    ).src = `https://openweathermap.org/img/wn/${icon}@4x.png`;
     document.querySelector(".description").innerText = description;
-    document.querySelector(".temp").innerText = `${temp} °C`;
+    document.querySelector(
+      ".temp"
+    ).innerHTML = `${temp} <span class="text-2xl font-semibold mt-2">°C</span>`;
     document.querySelector(
       ".feel"
-    ).innerHTML = `<span>Feels like:</span> ${feels_like} °C`;
-    document.querySelector(
-      ".max"
-    ).innerHTML = `<span>Max:</span> ${temp_max} °C`;
-    document.querySelector(
-      ".min"
-    ).innerHTML = `<span>Min:</span> ${temp_min} °C`;
-    document.querySelector(
-      ".humidity"
-    ).innerHTML = `<span>Humidity:</span> ${humidity}%`;
-    document.querySelector(
-      ".wind"
-    ).innerHTML = `<span>Wind speed:</span> ${windSpeed} k/h`;
+    ).innerHTML = `<span>Feels like </span> ${feels_like}°C`;
+    document.querySelector(".max span").innerHTML = `${temp_max}°C`;
+    document.querySelector(".min span").innerHTML = `${temp_min}°C`;
+    document.querySelector(".humidity span").innerHTML = `${humidity}%`;
+    document.querySelector(".wind span").innerHTML = `${windSpeed}k/h`;
+    document.querySelector(".visibility span").innerHTML = `${visibility}km`;
+    document.querySelector(".pressure span").innerHTML = `${pressure}hPa`;
 
     // Remove loading state
     document.querySelector(".weather").classList.remove("loading");
@@ -141,7 +175,7 @@ const weather = {
     this.fetchWeatherByCity(searchValue.trim());
 
     // Mark that user has interacted (enable background updates)
-    hasUserInteracted = 1;
+    // hasUserInteracted = 1;
 
     // Show loading state
     document.querySelector(".weather").classList.add("loading");
@@ -327,7 +361,7 @@ const geocoding = {
 /**
  * Handle search button click
  */
-document.querySelector(".search button").addEventListener("click", function () {
+document.querySelector(".search-button").addEventListener("click", function () {
   weather.handleSearch();
 });
 
