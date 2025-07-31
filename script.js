@@ -1,15 +1,35 @@
-pet = 0;
-let weather = {
-  apiKey: "6cb7ced7d19919873df5f93a31d36e86",
-  fetchWeatherC: function (latitude, longitude) {
-    fetch(
-      "https://api.openweathermap.org/data/2.5/weather?lat=" +
-        latitude +
-        "&lon=" +
-        longitude +
-        "&units=metric&appid=" +
-        this.apiKey
-    )
+// Global flag to track if background image should be updated
+// 0 = initial load (no background update), 1 = user search or location found (update background)
+let hasUserInteracted = 0;
+
+// Global variable to store current city name for background image
+// let currentCityName = "";
+
+// Check if CONFIG is available, if not show helpful error
+if (typeof CONFIG === "undefined") {
+  console.error(
+    "CONFIG is not defined. Please ensure config.js is loaded before script.js"
+  );
+  alert("Configuration error: API keys not found. Please check the setup.");
+}
+
+/**
+ * Weather API handler object
+ * Manages fetching weather data and updating the UI
+ */
+const weather = {
+  // OpenWeatherMap API key - loaded from config
+  apiKey: CONFIG?.OPENWEATHER_API_KEY || "",
+
+  /**
+   * Fetch weather data using coordinates (latitude and longitude)
+   * @param {number} latitude - Latitude coordinate
+   * @param {number} longitude - Longitude coordinate
+   */
+  fetchWeatherByCoordinates: function (latitude, longitude) {
+    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${this.apiKey}`;
+
+    fetch(apiUrl)
       .then((response) => {
         if (!response.ok) {
           alert("No weather found.");
@@ -19,13 +39,15 @@ let weather = {
       })
       .then((data) => this.displayWeather(data));
   },
-  fetchWeather: function (city) {
-    fetch(
-      "https://api.openweathermap.org/data/2.5/weather?q=" +
-        city +
-        "&units=metric&appid=" +
-        this.apiKey
-    )
+
+  /**
+   * Fetch weather data using city name
+   * @param {string} city - Name of the city
+   */
+  fetchWeatherByCity: function (city) {
+    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${this.apiKey}`;
+
+    fetch(apiUrl)
       .then((response) => {
         if (!response.ok) {
           alert("No weather found.");
@@ -33,178 +55,274 @@ let weather = {
         }
         return response.json();
       })
-      .then((data) => this.displayWeather(data));
+      .then((data) => {
+        console.log(data);
+        this.displayWeather(data);
+      });
   },
+
+  /**
+   * Display weather data in the UI
+   * @param {Object} data - Weather data from API response
+   */
   displayWeather: function (data) {
-    const { name } = data;
+    // Extract data from API response
+    const cityName = data.name;
     const { icon, description } = data.weather[0];
-    var { temp, feels_like, temp_max, temp_min } = data.main;
     const { humidity } = data.main;
-    const { speed } = data.wind;
+    const { speed: windSpeed } = data.wind;
     const { country } = data.sys;
 
-    n = name;
+    weather.updateBackgroundImage(`${cityName} ${description}`);
 
+    // Extract and format temperature data
+    let { temp, feels_like, temp_max, temp_min } = data.main;
+
+    // Store city name globally for background image
+    // currentCityName = cityName;
+
+    // Format temperatures to 2 significant digits
     temp = temp.toPrecision(2);
     feels_like = feels_like.toPrecision(2);
     temp_max = temp_max.toPrecision(2);
     temp_min = temp_min.toPrecision(2);
 
-    document.querySelector(".city").innerHTML =
-      "<span>Weather in</span> " + name + ", " + country;
-    document.querySelector(".icon").src =
-      "https://openweathermap.org/img/wn/" + icon + "@2x.png";
+    // Update UI elements with weather data
+    document.querySelector(
+      ".city"
+    ).innerHTML = `<span>Weather in</span> ${cityName}, ${country}`;
+    document.querySelector(
+      ".icon"
+    ).src = `https://openweathermap.org/img/wn/${icon}@2x.png`;
     document.querySelector(".description").innerText = description;
-    document.querySelector(".temp").innerText = temp + " °C";
-    document.querySelector(".feel").innerHTML =
-      "<span>Feels like:</span> " + feels_like + " °C";
-    document.querySelector(".max").innerHTML =
-      "<span>Max:</span> " + temp_max + " °C";
-    document.querySelector(".min").innerHTML =
-      "<span>Min:</span> " + temp_min + " °C";
-    document.querySelector(".humidity").innerHTML =
-      "<span>Humidity:</span> " + humidity + "%";
-    document.querySelector(".wind").innerHTML =
-      "<span>Wind speed:</span> " + speed + " k/h";
+    document.querySelector(".temp").innerText = `${temp} °C`;
+    document.querySelector(
+      ".feel"
+    ).innerHTML = `<span>Feels like:</span> ${feels_like} °C`;
+    document.querySelector(
+      ".max"
+    ).innerHTML = `<span>Max:</span> ${temp_max} °C`;
+    document.querySelector(
+      ".min"
+    ).innerHTML = `<span>Min:</span> ${temp_min} °C`;
+    document.querySelector(
+      ".humidity"
+    ).innerHTML = `<span>Humidity:</span> ${humidity}%`;
+    document.querySelector(
+      ".wind"
+    ).innerHTML = `<span>Wind speed:</span> ${windSpeed} k/h`;
+
+    // Remove loading state
     document.querySelector(".weather").classList.remove("loading");
 
-    if (pet != 0) {
-      this.background_src(n);
-    }
+    // Update background image if user has interacted with the app
+    // if (hasUserInteracted !== 0) {
+    //   this.updateBackgroundImage(currentCityName);
+    // }
   },
-  search: function () {
-    var search_val = document.querySelector(".search-bar").value;
-    this.fetchWeather(search_val.trim());
-    pet = 1;
+
+  /**
+   * Handle user search input
+   * Gets the search value and fetches weather for that city
+   */
+  handleSearch: function () {
+    const searchValue = document.querySelector(".search-bar").value;
+    this.fetchWeatherByCity(searchValue.trim());
+
+    // Mark that user has interacted (enable background updates)
+    hasUserInteracted = 1;
+
+    // Show loading state
     document.querySelector(".weather").classList.add("loading");
   },
-  background_src: function (source) {
-    if (window.innerWidth > 1080) {
-      document.body.style.backgroundImage =
-        "url('https://source.unsplash.com/1920x1080/?" + source + "')";
-    } else {
-      document.body.style.backgroundImage =
-        "url('https://source.unsplash.com/1080x1920/?" + source + "')";
-    }
+
+  /**
+   * Update background image based on location
+   * Uses different image dimensions based on screen width
+   * @param {string} locationName - Name of location for background image search
+   */
+  updateBackgroundImage: function (imageQuery) {
+    console.log(imageQuery);
+
+    const imageUrl = `https://api.unsplash.com/photos/random?per_page=1&query=${imageQuery}&client_id=${
+      CONFIG.UNSPLASH_API_KEY
+    }&orientation=${window.innerWidth > 900 ? "landscape" : "portrait"}`;
+    // If the screen is wider than 900px, use landscape orientation
+    // Otherwise, use portrait orientation
+
+    fetch(imageUrl)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch background image");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log(data);
+        const imageLink =
+          data.urls.regular ||
+          data.urls.full ||
+          data.urls.raw ||
+          data.urls.small;
+        document.body.style.backgroundImage = `url('${imageLink}')`;
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   },
 };
 
-let geocode = {
+/**
+ * Geocoding API handler object
+ * Manages location services and reverse geocoding
+ */
+const geocoding = {
+  // OpenCage Geocoding API key - loaded from config
+  apiKey: CONFIG?.OPENCAGE_API_KEY || "",
+
+  /**
+   * Convert coordinates to location name and fetch weather
+   * @param {number} latitude - Latitude coordinate
+   * @param {number} longitude - Longitude coordinate
+   */
   reverseGeocode: function (latitude, longitude) {
-    var api_key = "718be3bac33143749a5114aaa1d675cb";
+    // Create the geocoding query from coordinates
+    const coordinatesQuery = `${latitude},${longitude}`;
 
-    // reverse geocoding example (coordinates to address)
-    var query = latitude + "," + longitude;
+    // Build the API request URL
+    const apiUrl = "https://api.opencagedata.com/geocode/v1/json";
+    const requestUrl = `${apiUrl}?key=${this.apiKey}&q=${encodeURIComponent(
+      coordinatesQuery
+    )}&pretty=1&no_annotations=1`;
 
-    // forward geocoding example (address to coordinate)
-    // var query = 'Philipsbornstr. 2, 30165 Hannover, Germany';
-    // note: query needs to be URI encoded (see below)
+    // Create and configure the HTTP request
+    const request = new XMLHttpRequest();
+    request.open("GET", requestUrl, true);
 
-    var api_url = "https://api.opencagedata.com/geocode/v1/json";
-
-    var request_url =
-      api_url +
-      "?" +
-      "key=" +
-      api_key +
-      "&q=" +
-      encodeURIComponent(query) +
-      "&pretty=1" +
-      "&no_annotations=1";
-
-    // see full list of required and optional parameters:
-    // https://opencagedata.com/api#forward
-
-    var request = new XMLHttpRequest();
-    request.open("GET", request_url, true);
-
+    // Handle the API response
     request.onload = function () {
-      // see full list of possible response codes:
-      // https://opencagedata.com/api#codes
-
       if (request.status === 200) {
-        // Success!
-        var data = JSON.parse(request.responseText);
-        // print the location
-        // alert(data.results[0].components.town);
-        // alert(data.results[0].components.suburb);
-        console.log(data.results[0]);
+        // Successfully got location data
+        const data = JSON.parse(request.responseText);
+        const locationData = data.results[0];
 
-        // pet = 1;
+        console.log(locationData);
 
-        weather.background_src(data.results[0].components.state);
+        // Set background image using state/region name
+        // weather.updateBackgroundImage(`
+        //   ${
+        //     locationData.components.city !== undefined
+        //       ? locationData.components.city
+        //       : ""
+        //   } ${
+        //   locationData.components.state !== undefined
+        //     ? locationData.components.state
+        //     : ""
+        // } ${
+        //   locationData.components.country !== undefined
+        //     ? locationData.components.country
+        //     : ""
+        // }`);
 
-        if (typeof data.results[0].components.town != "undefined") {
-          weather.fetchWeather(data.results[0].components.town);
-        } else if (typeof data.results[0].components.suburb != "undefined") {
-          weather.fetchWeather(data.results[0].components.suburb);
-        } else if (typeof data.results[0].components.city != "undefined") {
-          weather.fetchWeather(data.results[0].components.city);
-        } else if (typeof data.results[0].components.county != "undefined") {
-          weather.fetchWeather(data.results[0].components.county);
-        } else if (typeof data.results[0].components.state != "undefined") {
-          weather.fetchWeather(data.results[0].components.state);
-        } else if (
-          typeof data.results[0].geometry.lat != "undefined" &&
-          typeof data.results[0].geometry.lng != "undefined"
-        ) {
-          weather.fetchWeatherC(
-            data.results[0].geometry.lat,
-            data.results[0].geometry.lng
-          );
+        // Try to find the most specific location available and fetch weather
+        // Priority: town > suburb > city > county > state > coordinates
+        const { town, suburb, city, county, state, lat, lng } =
+          locationData.components;
+        if (town) {
+          weather.fetchWeatherByCity(town);
+        } else if (suburb) {
+          weather.fetchWeatherByCity(suburb);
+        } else if (city) {
+          weather.fetchWeatherByCity(city);
+        } else if (county) {
+          weather.fetchWeatherByCity(county);
+        } else if (state) {
+          weather.fetchWeatherByCity(state);
+        } else if (lat && lng) {
+          // If no location name available, use coordinates
+          weather.fetchWeatherByCoordinates(lat, lng);
         } else {
-          alert('Do you even live here " ' + data.results[0].formatted + ' "?');
+          // No valid location data found
+          alert(`Are you even present here "${locationData.formatted}"?`);
         }
 
+        // Log the current location information
         console.log(
-          "Current location: " +
-            data.results[0].formatted +
-            " (" +
-            data.results[0].geometry.lat +
-            ", " +
-            data.results[0].geometry.lng +
-            ")"
+          `Current location: ${locationData.formatted} (${locationData.geometry.lat}, ${locationData.geometry.lng})`
         );
       } else if (request.status <= 500) {
-        // We reached our target server, but it returned an error
-
-        console.log("unable to geocode! Response code: " + request.status);
-        var data = JSON.parse(request.responseText);
-        console.log("error msg: " + data.status.message);
+        // Server responded with an error
+        console.log(`Unable to geocode! Response code: ${request.status}`);
+        const errorData = JSON.parse(request.responseText);
+        console.log(`Error message: ${errorData.status.message}`);
       } else {
-        console.log("server error");
+        // Server error
+        console.log("Server error");
       }
     };
 
+    // Handle connection errors
     request.onerror = function () {
-      // There was a connection error of some sort
-      console.log("unable to connect to server");
+      console.log("Unable to connect to server");
     };
 
-    request.send(); // make the request
+    // Send the request
+    request.send();
   },
-  geolocation: function () {
-    function success(data) {
-      geocode.reverseGeocode(data.coords.latitude, data.coords.longitude);
+
+  /**
+   * Get user's current location and fetch weather for it
+   * Falls back to Kolkata if geolocation is not available
+   */
+  getCurrentLocation: function () {
+    /**
+     * Success callback for geolocation
+     * @param {GeolocationPosition} position - Position data from browser
+     */
+    function onLocationSuccess(position) {
+      geocoding.reverseGeocode(
+        position.coords.latitude,
+        position.coords.longitude
+      );
     }
+
+    // Check if geolocation is supported by the browser
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(success, console.error);
+      navigator.geolocation.getCurrentPosition(
+        onLocationSuccess,
+        console.error
+      );
     } else {
-      weather.fetchWeather("Kolkata");
+      // Fallback to default city if geolocation is not supported
+      weather.fetchWeatherByCity("Kolkata");
     }
   },
 };
 
+// ===== EVENT LISTENERS =====
+
+/**
+ * Handle search button click
+ */
 document.querySelector(".search button").addEventListener("click", function () {
-  weather.search();
+  weather.handleSearch();
 });
 
+/**
+ * Handle Enter key press in search bar
+ */
 document
   .querySelector(".search-bar")
   .addEventListener("keyup", function (event) {
-    if (event.key == "Enter") {
-      weather.search();
+    if (event.key === "Enter") {
+      weather.handleSearch();
     }
   });
 
-geocode.geolocation();
+// ===== INITIALIZATION =====
+
+/**
+ * Initialize the app by getting user's current location
+ * This runs when the page loads
+ */
+geocoding.getCurrentLocation();
