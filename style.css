@@ -32,6 +32,11 @@ body::-webkit-scrollbar,
   filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
 }
 
+.weather .icon {
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+  object-fit: cover;
+}
+
 /* Loading state styles */
 .weather.loading .temp {
   background-color: rgba(230, 230, 230, 0.142);
@@ -80,7 +85,11 @@ body::-webkit-scrollbar,
   background-color: rgba(230, 230, 230, 0.142);
   border-radius: 5px;
   height: 36px;
-  width: 200px;
+  width: 150px;
+}
+
+.weather.loading .wind-pre {
+  border: none;
 }
 
 /* .weather.loading .line1 {
@@ -115,10 +124,12 @@ body::-webkit-scrollbar,
   animation: pulse-custom 1.5s infinite ease;
   color: transparent !important;
 }
-
+.weather .advanced-data {
+  font-weight: 300;
+}
 .weather .advanced-data img {
   opacity: 0.5;
-  margin-right: 7px;
+  margin-right: 2px;
 }
 .weather.loading .advanced-data img {
   display: none;

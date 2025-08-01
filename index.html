@@ -47,10 +47,10 @@
 <body class="flex justify-center items-center h-screen w-screen m-0 p-0 bg-slate-950 overflow-x-hidden"
   style="background-position: center; background-size: cover; background-repeat: no-repeat; background-attachment: fixed;">
   <main
-    class="flex flex-col gap-6 bg-[rgba(0,0,0,0.05)] text-white p-8 overflow-x-hidden z-10 sm:rounded-3xl sm:backdrop-blur-3xl max-sm:w-screen max-sm:h-full max-sm:min-h-screen max-sm:bg-black max-sm:bg-opacity-40">
+    class="flex flex-col gap-6 bg-[rgba(0,0,0,0.05)] text-white p-8 overflow-x-hidden z-10 sm:rounded-3xl sm:backdrop-blur-3xl max-sm:w-screen max-sm:h-full max-sm:min-h-screen max-sm:bg-black max-sm:bg-opacity-50">
 
     <div class="weather loading flex flex-col">
-      <div class="flex flex-row flex-wrap items-center justify-between gap-2">
+      <div class="flex flex-row items-center justify-between gap-2">
         <h2 class="city text-3xl font-semibold"></h2>
         <div class="time text-right my-4">
           <div class="line1 text-sm font-medium"></div>
@@ -59,7 +59,7 @@
       </div>
 
       <div class="temp-flex flex items-center justify-center flex-col">
-        <div class="flex flex-col items-center justify-center -m-8">
+        <div class="flex flex-col items-center justify-center -m-8 aspect-square h-[200px]">
           <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="description"
             class="icon aspect-square" />
         </div>
@@ -71,7 +71,7 @@
         </div>
       </div>
       <div class="advanced-data flex items-center justify-center my-8">
-        <div class="min-max pr-4 grid gap-2">
+        <div class="min-max pr-2 grid gap-2">
           <div class="max">
             <img src="public/arrow.svg" class="invert w-4 inline" alt="maximum temperature">
             <span></span>
@@ -82,19 +82,19 @@
           </div>
         </div>
 
-        <div class="hum-wind border-x border-gray-400 px-4 grid gap-2">
-          <div class="humidity">
-            <img src="public/humid.svg" class="invert w-4 inline" alt="humidity">
-            <span></span>
-          </div>
+        <div class="wind-pre border-x border-white border-opacity-20 px-2 grid gap-2">
           <div class="wind">
             <img src="public/wind.svg" class="invert w-4 inline" alt="wind speed">
             <span></span>
           </div>
-        </div>
-        <div class="pre-vis pl-4 grid gap-2">
           <div class="pressure">
             <img src="public/pressure.svg" class="invert w-4 inline" alt="pressure">
+            <span></span>
+          </div>
+        </div>
+        <div class="hum-vis pl-2 grid gap-2">
+          <div class="humidity">
+            <img src="public/humid.svg" class="invert w-4 inline" alt="humidity">
             <span></span>
           </div>
           <div class="visibility">
